@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6557ff">
+  <title>FitCalory</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">умный дневник питания</p>
+        <h1>FitCalory</h1>
+      </div>
+      <button class="icon-button" id="themeToggle" type="button" aria-label="Переключить тему">☾</button>
+    </header>
+
+    <main>
+      <section class="panel hero-panel">
+        <div class="hero-copy">
+          <p class="muted">Текущая цель</p>
+          <h2 id="goalTitle">Похудение</h2>
+          <p id="goalMessage" class="goal-message">Заполните профиль и добавьте еду.</p>
+        </div>
+        <div class="hero-number">
+          <span id="balanceLabel">Дефицит</span>
+          <strong id="balanceValue">0</strong>
+          <small>ккал</small>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Итоги дня">
+        <article class="stat-card">
+          <span>Съедено</span>
+          <strong id="totalCalories">0</strong>
+          <small>ккал</small>
+        </article>
+        <article class="stat-card">
+          <span>Активность</span>
+          <strong id="activityCalories">0</strong>
+          <small>ккал</small>
+        </article>
+        <article class="stat-card">
+          <span>Базовый расход</span>
+          <strong id="baseBurn">0</strong>
+          <small>ккал</small>
+        </article>
+        <article class="stat-card">
+          <span>Общий расход</span>
+          <strong id="totalBurn">0</strong>
+          <small>ккал</small>
+        </article>
+      </section>
+
+      <section class="macro-row" aria-label="Макронутриенты">
+        <div><span>Белки</span><strong id="totalProtein">0 г</strong></div>
+        <div><span>Жиры</span><strong id="totalFat">0 г</strong></div>
+        <div><span>Углеводы</span><strong id="totalCarbs">0 г</strong></div>
+      </section>
+
+      <section class="panel advice-panel">
+        <h2>Что сделать дальше</h2>
+        <div id="nextAdvice" class="advice-list"></div>
+      </section>
+
+      <section class="grid-2">
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">еда</p>
+              <h2>Что вы съели?</h2>
+            </div>
+          </div>
+          <form id="foodForm" class="input-row">
+            <input id="foodInput" autocomplete="off" placeholder="Например: 2 яйца и 1 банан">
+            <button type="submit">Добавить</button>
+          </form>
+          <p id="foodError" class="form-message" role="status"></p>
+          <div id="foodList" class="card-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">активность</p>
+              <h2>Что вы делали?</h2>
+            </div>
+          </div>
+          <form id="activityForm" class="input-row">
+            <input id="activityInput" autocomplete="off" placeholder="Например: бег 1 км">
+            <button type="submit">Добавить</button>
+          </form>
+          <p id="activityError" class="form-message" role="status"></p>
+          <div id="activityList" class="card-list"></div>
+        </article>
+      </section>
+
+      <section class="grid-2">
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">профиль</p>
+              <h2>Ваши данные</h2>
+            </div>
+          </div>
+          <form id="profileForm" class="profile-grid">
+            <label>
+              Цель
+              <select id="goal">
+                <option value="loss">Похудение</option>
+                <option value="gain">Набор массы</option>
+              </select>
+            </label>
+            <label>
+              Пол
+              <select id="sex">
+                <option value="male">Мужчина</option>
+                <option value="female">Женщина</option>
+              </select>
+            </label>
+            <label>
+              Вес, кг
+              <input id="weight" type="number" min="30" max="250" step="0.1">
+            </label>
+            <label>
+              Рост, см
+              <input id="height" type="number" min="100" max="230" step="1">
+            </label>
+            <label>
+              Возраст
+              <input id="age" type="number" min="10" max="100" step="1">
+            </label>
+            <button type="submit">Сохранить профиль</button>
+          </form>
+        </article>
+
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">база</p>
+              <h2>Добавить продукт</h2>
+            </div>
+          </div>
+          <form id="productForm" class="product-grid">
+            <label>
+              Название
+              <input id="productName" placeholder="Например: кефир">
+            </label>
+            <label>
+              Ккал / 100 г
+              <input id="productCalories" type="number" min="0" step="0.1">
+            </label>
+            <label>
+              Белки / 100 г
+              <input id="productProtein" type="number" min="0" step="0.1">
+            </label>
+            <label>
+              Жиры / 100 г
+              <input id="productFat" type="number" min="0" step="0.1">
+            </label>
+            <label>
+              Углеводы / 100 г
+              <input id="productCarbs" type="number" min="0" step="0.1">
+            </label>
+            <label>
+              Вес 1 штуки, г
+              <input id="productUnitWeight" type="number" min="0" step="1" placeholder="если нужно">
+            </label>
+            <button type="submit">Сохранить продукт</button>
+          </form>
+          <p id="productMessage" class="form-message" role="status"></p>
+          <div id="customProducts" class="chips"></div>
+        </article>
+      </section>
+
+      <section class="notice-grid">
+        <p>FitCalory считает калории приблизительно. Реальная калорийность еды и расход энергии могут отличаться.</p>
+        <p>Если у вас есть проблемы с почками, сердцем, обменом веществ или другие медицинские ограничения, перед изменением питания нужно проконсультироваться с врачом.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
