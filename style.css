@@ -98,6 +98,35 @@ select:focus {
   line-height: 1;
 }
 
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.app-nav a {
+  flex: 0 0 auto;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+  padding: 10px 12px;
+  text-decoration: none;
+}
+
+.app-nav a:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: var(--accent);
@@ -225,6 +254,13 @@ select:focus {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.section-note {
+  align-self: end;
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .section-heading h2,
@@ -378,6 +414,137 @@ select:focus {
   color: var(--muted);
 }
 
+.history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.history-day {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 14px;
+}
+
+.history-day strong,
+.history-day span {
+  display: block;
+}
+
+.history-day span {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.stats-panel {
+  margin-top: 16px;
+}
+
+.period-controls {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.period-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.stats-title {
+  margin: 6px 0 12px;
+  font-size: 20px;
+}
+
+.monthly-result {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.monthly-result p,
+.analysis-card {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  padding: 14px;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summary-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 14px;
+}
+
+.summary-card span {
+  display: block;
+  min-height: 34px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.analysis-card {
+  margin-top: 14px;
+}
+
+.analysis-card h3,
+.analysis-card p,
+.chart-card h3 {
+  margin: 0;
+}
+
+.analysis-card p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.chart-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 14px;
+}
+
+.chart-card canvas {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 10px;
+}
+
 @media (max-width: 850px) {
   .app-shell {
     width: min(100% - 20px, 620px);
@@ -386,7 +553,9 @@ select:focus {
 
   .hero-panel,
   .grid-2,
-  .notice-grid {
+  .notice-grid,
+  .period-controls,
+  .chart-grid {
     grid-template-columns: 1fr;
   }
 
@@ -396,7 +565,8 @@ select:focus {
   }
 
   .stats-grid,
-  .advice-list {
+  .advice-list,
+  .stats-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -411,7 +581,9 @@ select:focus {
   .profile-grid,
   .product-grid,
   .input-row,
-  .advice-list {
+  .advice-list,
+  .stats-cards,
+  .history-day {
     grid-template-columns: 1fr;
   }
 

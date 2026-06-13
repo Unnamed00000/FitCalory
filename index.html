@@ -18,8 +18,17 @@
       <button class="icon-button" id="themeToggle" type="button" aria-label="Переключить тему">☾</button>
     </header>
 
+    <nav class="app-nav" aria-label="Основное меню">
+      <a href="#home" data-i18n="navHome">Главная</a>
+      <a href="#food" data-i18n="navFood">Еда</a>
+      <a href="#activity" data-i18n="navActivity">Активность</a>
+      <a href="#history" data-i18n="navHistory">История</a>
+      <a href="#statistics" data-i18n="statistics">Статистика</a>
+      <a href="#profile" data-i18n="navProfile">Профиль</a>
+    </nav>
+
     <main>
-      <section class="panel hero-panel">
+      <section class="panel hero-panel" id="home">
         <div class="hero-copy">
           <p class="muted">Текущая цель</p>
           <h2 id="goalTitle">Похудение</h2>
@@ -67,7 +76,7 @@
       </section>
 
       <section class="grid-2">
-        <article class="panel">
+        <article class="panel" id="food">
           <div class="section-heading">
             <div>
               <p class="eyebrow">еда</p>
@@ -82,7 +91,7 @@
           <div id="foodList" class="card-list"></div>
         </article>
 
-        <article class="panel">
+        <article class="panel" id="activity">
           <div class="section-heading">
             <div>
               <p class="eyebrow">активность</p>
@@ -98,8 +107,79 @@
         </article>
       </section>
 
+      <section class="panel" id="history">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="historyDays">история дней</p>
+            <h2 data-i18n="navHistory">История</h2>
+          </div>
+          <p id="historySummary" class="section-note"></p>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <section class="panel stats-panel" id="statistics">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="monthlyResult">месячный результат</p>
+            <h2 data-i18n="statistics">Статистика</h2>
+          </div>
+        </div>
+
+        <div class="period-controls">
+          <label>
+            <span data-i18n="period">Период</span>
+            <select id="periodPreset">
+              <option value="thisMonth" data-i18n="thisMonth">Этот месяц</option>
+              <option value="lastMonth" data-i18n="lastMonth">Прошлый месяц</option>
+              <option value="last2" data-i18n="last2Months">Последние 2 месяца</option>
+              <option value="last3" data-i18n="last3Months">Последние 3 месяца</option>
+              <option value="last6" data-i18n="last6Months">Последние 6 месяцев</option>
+              <option value="all" data-i18n="allPeriod">Весь период</option>
+              <option value="custom" data-i18n="customPeriod">Свой период</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="from">От даты</span>
+            <input id="periodStart" type="date">
+          </label>
+          <label>
+            <span data-i18n="to">До даты</span>
+            <input id="periodEnd" type="date">
+          </label>
+        </div>
+
+        <h3 id="statsTitle" class="stats-title"></h3>
+        <div id="monthlyResult" class="monthly-result"></div>
+        <div id="statsCards" class="stats-cards"></div>
+
+        <div class="analysis-card">
+          <h3 data-i18n="fitAnalysis">Анализ FitCalory</h3>
+          <p id="fitAnalysis"></p>
+        </div>
+
+        <div class="chart-grid">
+          <article class="chart-card">
+            <h3 data-i18n="calorieChart">Калории по дням</h3>
+            <canvas id="calorieChart" height="240"></canvas>
+          </article>
+          <article class="chart-card">
+            <h3 data-i18n="activityChart">Активность по дням</h3>
+            <canvas id="activityChart" height="240"></canvas>
+          </article>
+          <article class="chart-card">
+            <h3 data-i18n="activityTypeChart">Виды активности</h3>
+            <canvas id="activityTypeChart" height="240"></canvas>
+          </article>
+          <article class="chart-card">
+            <h3 data-i18n="resultChart">График результата</h3>
+            <canvas id="resultChart" height="240"></canvas>
+          </article>
+        </div>
+      </section>
+
       <section class="grid-2">
-        <article class="panel">
+        <article class="panel" id="profile">
           <div class="section-heading">
             <div>
               <p class="eyebrow">профиль</p>
@@ -132,6 +212,15 @@
             <label>
               Возраст
               <input id="age" type="number" min="10" max="100" step="1">
+            </label>
+            <label>
+              Язык
+              <select id="language">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="da">Dansk</option>
+                <option value="ka">ქართული</option>
+              </select>
             </label>
             <button type="submit">Сохранить профиль</button>
           </form>
