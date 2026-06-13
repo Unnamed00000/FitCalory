@@ -352,6 +352,79 @@ select:focus {
   grid-column: 1 / -1;
 }
 
+.full-span {
+  grid-column: 1 / -1;
+}
+
+.photo-food-box {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.compact-heading {
+  margin-bottom: 10px;
+}
+
+.compact-heading h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.photo-grid label,
+.photo-review-row label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.photo-preview {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.photo-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.photo-review-list {
+  display: grid;
+  gap: 10px;
+}
+
+.photo-review-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.7fr auto;
+  gap: 10px;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 12px;
+}
+
+.photo-review-row span {
+  min-width: 140px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .advice-panel {
   margin-top: 16px;
 }
@@ -625,7 +698,9 @@ select:focus {
   .grid-2,
   .notice-grid,
   .period-controls,
-  .chart-grid {
+  .chart-grid,
+  .photo-grid,
+  .photo-review-row {
     grid-template-columns: 1fr;
   }
 
