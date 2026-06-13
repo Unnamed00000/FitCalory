@@ -9,8 +9,6 @@ const STORAGE_KEYS = {
   language: "fitcalory_language"
 };
 
-const AI_PROXY_URL = "";
-
 const DEFAULT_PROFILE = {
   goal: "loss",
   sex: "male",
@@ -176,12 +174,6 @@ let state = {
 };
 
 const els = {};
-let photoFoodState = {
-  imageDataUrl: "",
-  items: [],
-  detectedWeight: 0,
-  weightSource: ""
-};
 
 document.addEventListener("DOMContentLoaded", () => {
   bindElements();
@@ -214,9 +206,7 @@ function bindElements() {
     "productFat", "productCarbs", "productUnitWeight", "productMessage",
     "customProducts", "historySummary", "historyList", "periodPreset",
     "periodStart", "periodEnd", "statsTitle", "monthlyResult", "statsCards",
-    "fitAnalysis", "calorieChart", "activityChart", "activityTypeChart", "resultChart",
-    "photoFoodFile", "photoFoodWeight", "photoAnalyzeButton", "photoFoodMessage",
-    "photoPreview", "photoResult"
+    "fitAnalysis", "calorieChart", "activityChart", "activityTypeChart", "resultChart"
   ].forEach((id) => {
     els[id] = document.getElementById(id);
   });
@@ -258,14 +248,6 @@ function bindEvents() {
   els.productForm.addEventListener("submit", (event) => {
     event.preventDefault();
     addCustomProduct();
-  });
-
-  els.photoFoodFile.addEventListener("change", handlePhotoFoodFile);
-  els.photoAnalyzeButton.addEventListener("click", analyzePhotoFood);
-  els.photoResult.addEventListener("click", (event) => {
-    if (event.target.closest("[data-confirm-photo-food]")) {
-      confirmPhotoFood();
-    }
   });
 
   [els.periodPreset, els.periodStart, els.periodEnd].forEach((element) => {
@@ -520,223 +502,6 @@ function parseActivityInput(text) {
     createdAt: Date.now(),
     dateKey: state.currentDate
   };
-}
-
-async function handlePhotoFoodFile() {
-  clearMessage(els.photoFoodMessage);
-  els.photoResult.innerHTML = "";
-  photoFoodState.items = [];
-  const file = els.photoFoodFile.files && els.photoFoodFile.files[0];
-  if (!file) return;
-
-  if (!file.type.startsWith("image/")) {
-    showMessage(els.photoFoodMessage, "Выберите фото еды.", true);
-    return;
-  }
-
-  try {
-    photoFoodState.imageDataUrl = await resizeImageToDataUrl(file, 1280, 0.78);
-    els.photoPreview.src = photoFoodState.imageDataUrl;
-    els.photoPreview.hidden = false;
-    showMessage(els.photoFoodMessage, "Фото готово. Вес можно ввести вручную или оставить пустым, если он виден на упаковке.", false);
-  } catch (error) {
-    showMessage(els.photoFoodMessage, "Не получилось подготовить фото. Попробуйте другое изображение.", true);
-  }
-}
-
-async function analyzePhotoFood() {
-  clearMessage(els.photoFoodMessage);
-  els.photoResult.innerHTML = "";
-
-  const totalWeight = positiveNumber(els.photoFoodWeight.value, 0);
-  if (!photoFoodState.imageDataUrl) {
-    showMessage(els.photoFoodMessage, "Сначала выберите или сфотографируйте еду.", true);
-    return;
-  }
-  if (!isSafeProxyUrl(AI_PROXY_URL)) {
-    showMessage(els.photoFoodMessage, "AI распознавание ещё не подключено владельцем приложения. Пользователям не нужно вводить URL вручную.", true);
-    return;
-  }
-
-  els.photoAnalyzeButton.disabled = true;
-  els.photoAnalyzeButton.textContent = "Распознаю...";
-
-  try {
-    const response = await fetch(AI_PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        image: photoFoodState.imageDataUrl,
-        totalWeightGrams: totalWeight || null,
-        language: state.language,
-        productHints: getAllProducts().map((item) => item.name).slice(0, 80)
-      })
-    });
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data.error || "AI proxy error");
-    }
-
-    const resolvedWeight = positiveNumber(data.detectedTotalWeightGrams, totalWeight);
-    if (!resolvedWeight) {
-      showMessage(els.photoFoodMessage, "AI не нашёл вес на упаковке. Введите общий вес еды вручную.", true);
-      return;
-    }
-
-    const items = normalizeAiFoodItems(data.items || [], resolvedWeight);
-    if (!items.length) {
-      showMessage(els.photoFoodMessage, "AI не смог уверенно распознать еду. Попробуйте другое фото или добавьте еду текстом.", true);
-      return;
-    }
-
-    photoFoodState.items = items;
-    photoFoodState.detectedWeight = resolvedWeight;
-    photoFoodState.weightSource = data.weightSource || (totalWeight ? "введено вручную" : "прочитано с фото");
-    els.photoFoodWeight.value = round(resolvedWeight);
-    renderPhotoFoodResult();
-    showMessage(els.photoFoodMessage, "Проверьте продукты и граммы перед добавлением. Фото не сохраняется.", false);
-  } catch (error) {
-    showMessage(els.photoFoodMessage, `Не получилось распознать фото: ${error.message}`, true);
-  } finally {
-    els.photoAnalyzeButton.disabled = false;
-    els.photoAnalyzeButton.textContent = "Распознать по фото";
-  }
-}
-
-function normalizeAiFoodItems(items, totalWeight) {
-  const cleaned = items
-    .map((item) => ({
-      name: String(item.name || "").trim().toLowerCase(),
-      percent: Math.max(0, Number(item.percent) || 0),
-      confidence: Math.max(0, Math.min(1, Number(item.confidence) || 0)),
-      note: String(item.note || "").trim()
-    }))
-    .filter((item) => item.name && item.percent > 0);
-
-  const percentTotal = cleaned.reduce((total, item) => total + item.percent, 0);
-  if (!percentTotal) return [];
-
-  return cleaned.map((item) => ({
-    ...item,
-    grams: Math.round((item.percent / percentTotal) * totalWeight)
-  }));
-}
-
-function renderPhotoFoodResult() {
-  els.photoResult.innerHTML = `
-    <div class="photo-weight-note">
-      Вес еды: <strong>${round(photoFoodState.detectedWeight)} г</strong>
-      <span>${escapeHtml(photoFoodState.weightSource)}</span>
-    </div>
-    <div class="photo-review-list">
-      ${photoFoodState.items.map((item, index) => {
-        const found = findProduct(normalize(item.name));
-        return `
-          <div class="photo-review-row" data-photo-row="${index}">
-            <label>
-              Продукт
-              <input data-photo-name value="${escapeHtml(item.name)}">
-            </label>
-            <label>
-              Граммы
-              <input data-photo-grams type="number" min="1" step="1" value="${round(item.grams)}">
-            </label>
-            <span class="${found ? "status-good" : "status-warn"}">
-              ${found ? "найдено в базе" : "проверьте название или добавьте продукт"}
-            </span>
-          </div>
-        `;
-      }).join("")}
-    </div>
-    <button type="button" data-confirm-photo-food>Добавить распознанную еду</button>
-  `;
-}
-
-function confirmPhotoFood() {
-  ensureCurrentDay();
-  clearMessage(els.photoFoodMessage);
-  const rows = [...els.photoResult.querySelectorAll("[data-photo-row]")];
-  const items = [];
-  const missing = [];
-
-  rows.forEach((row) => {
-    const name = row.querySelector("[data-photo-name]").value.trim();
-    const grams = positiveNumber(row.querySelector("[data-photo-grams]").value, 0);
-    if (!name || !grams) return;
-    const found = findProduct(normalize(name));
-    if (!found) {
-      missing.push(name);
-      return;
-    }
-    const totals = scaleNutrition(found.product, grams);
-    items.push({
-      id: createId(),
-      title: `Фото: ${name}`,
-      productName: found.product.name,
-      grams,
-      note: "распознано по фото, подтверждено пользователем",
-      calories: totals.calories,
-      protein: totals.protein,
-      fat: totals.fat,
-      carbs: totals.carbs,
-      createdAt: Date.now(),
-      dateKey: state.currentDate
-    });
-  });
-
-  if (missing.length) {
-    showMessage(els.photoFoodMessage, `Не найдено в базе: ${missing.join(", ")}. Исправьте название или добавьте продукт в базу.`, true);
-    return;
-  }
-
-  if (!items.length) {
-    showMessage(els.photoFoodMessage, "Нет продуктов для добавления.", true);
-    return;
-  }
-
-  state.foods = [...items, ...state.foods];
-  state.foodByDate[state.currentDate] = state.foods;
-  saveDailyState();
-  photoFoodState = { imageDataUrl: "", items: [], detectedWeight: 0, weightSource: "" };
-  els.photoFoodFile.value = "";
-  els.photoFoodWeight.value = "";
-  els.photoPreview.hidden = true;
-  els.photoPreview.removeAttribute("src");
-  els.photoResult.innerHTML = "";
-  showMessage(els.photoFoodMessage, "Еда добавлена. Фото не сохранено.", false);
-  render();
-}
-
-function resizeImageToDataUrl(file, maxSize, quality) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("file read error"));
-    reader.onload = () => {
-      const image = new Image();
-      image.onerror = () => reject(new Error("image load error"));
-      image.onload = () => {
-        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(image.width * scale));
-        canvas.height = Math.max(1, Math.round(image.height * scale));
-        const context = canvas.getContext("2d");
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
-      };
-      image.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function isSafeProxyUrl(value) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:";
-  } catch (error) {
-    return false;
-  }
 }
 
 function addCustomProduct() {
