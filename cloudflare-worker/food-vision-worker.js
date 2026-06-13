@@ -24,7 +24,8 @@ export default {
     try {
       const body = await request.json();
       const image = String(body.image || "");
-      const totalWeightGrams = Number(body.totalWeightGrams);
+      const totalWeightInput = Number(body.totalWeightGrams);
+      const totalWeightGrams = Number.isFinite(totalWeightInput) && totalWeightInput > 0 ? totalWeightInput : 0;
       const language = String(body.language || "ru").slice(0, 8);
       const productHints = Array.isArray(body.productHints)
         ? body.productHints.slice(0, 100).map((item) => String(item).slice(0, 60))
@@ -33,7 +34,7 @@ export default {
       if (!image.startsWith("data:image/")) {
         return json({ error: "Image must be a base64 data URL" }, 400, corsHeaders);
       }
-      if (!Number.isFinite(totalWeightGrams) || totalWeightGrams <= 0 || totalWeightGrams > 5000) {
+      if (totalWeightGrams > 5000) {
         return json({ error: "Invalid total food weight" }, 400, corsHeaders);
       }
       if (estimateBase64Bytes(image) > MAX_IMAGE_BYTES) {
@@ -60,16 +61,21 @@ async function analyzeFoodImage({ apiKey, model, image, totalWeightGrams, langua
   const prompt = [
     "You analyze a meal photo for a calorie tracker.",
     "Return only valid JSON. No markdown.",
-    "The user provides the total edible food weight, not plate weight.",
-    `Total food weight: ${totalWeightGrams} g.`,
+    totalWeightGrams > 0
+      ? "The user provides the total edible food weight, not plate weight."
+      : "The user did not provide weight. Read the package text and find net weight / product weight if visible.",
+    totalWeightGrams > 0
+      ? `Total food weight provided by user: ${totalWeightGrams} g.`
+      : "If the image shows grams or kilograms on the package, convert it to grams and return it as detectedTotalWeightGrams. If no package weight is visible, return 0.",
     `User language: ${language}.`,
     "Identify visible edible components and estimate each component's percentage of edible weight.",
     "Percent values must sum to about 100.",
     "Use simple food names that can match this app database when possible.",
     "If a sauce/oil is visible or likely important, include it.",
+    "Do not invent package weight if it is not visible.",
     "Do not invent exact calories. The app will calculate nutrition from its own database.",
     `Known product hints: ${productHints.join(", ")}`,
-    'JSON shape: {"items":[{"name":"rice","percent":45,"confidence":0.7,"note":"short note"}]}'
+    'JSON shape: {"detectedTotalWeightGrams":220,"weightSource":"read from package: 220 g","items":[{"name":"rice","percent":100,"confidence":0.7,"note":"short note"}]}'
   ].join("\n");
 
   const response = await fetch("https://api.openai.com/v1/responses", {
@@ -96,6 +102,14 @@ async function analyzeFoodImage({ apiKey, model, image, totalWeightGrams, langua
             type: "object",
             additionalProperties: false,
             properties: {
+              detectedTotalWeightGrams: {
+                type: "number",
+                minimum: 0,
+                maximum: 5000
+              },
+              weightSource: {
+                type: "string"
+              },
               items: {
                 type: "array",
                 minItems: 1,
@@ -113,7 +127,7 @@ async function analyzeFoodImage({ apiKey, model, image, totalWeightGrams, langua
                 }
               }
             },
-            required: ["items"]
+            required: ["detectedTotalWeightGrams", "weightSource", "items"]
           }
         }
       }
@@ -127,7 +141,14 @@ async function analyzeFoodImage({ apiKey, model, image, totalWeightGrams, langua
 
   const text = data.output_text || "";
   const parsed = JSON.parse(text);
+  const detectedTotalWeightGrams = totalWeightGrams > 0
+    ? totalWeightGrams
+    : Math.max(0, Math.min(5000, Number(parsed.detectedTotalWeightGrams) || 0));
   return {
+    detectedTotalWeightGrams,
+    weightSource: totalWeightGrams > 0
+      ? "provided by user"
+      : String(parsed.weightSource || "").slice(0, 160),
     items: normalizeItems(parsed.items || [])
   };
 }

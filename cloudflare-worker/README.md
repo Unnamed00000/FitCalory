@@ -26,4 +26,6 @@ https://fitcalory-food-ai.your-account.workers.dev
 
 Open FitCalory, go to Profile, paste the URL into `AI proxy URL`, and save.
 
-The browser sends only the resized food photo and total food weight to this Worker. The photo is not saved in localStorage by the app.
+The browser sends only the resized food photo and optional total food weight to this Worker. If the user leaves weight empty, the Worker asks AI to read visible package weight such as `220 g` or `1 kg` and return grams. If no weight is visible, the app asks the user to enter it manually.
+
+The photo is not saved in localStorage by the app.

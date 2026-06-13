@@ -408,6 +408,22 @@ select:focus {
   gap: 10px;
 }
 
+.photo-weight-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  padding: 12px;
+}
+
+.photo-weight-note span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .photo-review-row {
   display: grid;
   grid-template-columns: 1.2fr 0.7fr auto;

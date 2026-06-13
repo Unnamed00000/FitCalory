@@ -178,7 +178,9 @@ let state = {
 const els = {};
 let photoFoodState = {
   imageDataUrl: "",
-  items: []
+  items: [],
+  detectedWeight: 0,
+  weightSource: ""
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -538,7 +540,7 @@ async function handlePhotoFoodFile() {
     photoFoodState.imageDataUrl = await resizeImageToDataUrl(file, 1280, 0.78);
     els.photoPreview.src = photoFoodState.imageDataUrl;
     els.photoPreview.hidden = false;
-    showMessage(els.photoFoodMessage, "Фото готово. Укажите общий вес еды и нажмите распознавание.", false);
+    showMessage(els.photoFoodMessage, "Фото готово. Вес можно ввести вручную или оставить пустым, если он виден на упаковке.", false);
   } catch (error) {
     showMessage(els.photoFoodMessage, "Не получилось подготовить фото. Попробуйте другое изображение.", true);
   }
@@ -551,10 +553,6 @@ async function analyzePhotoFood() {
   const totalWeight = positiveNumber(els.photoFoodWeight.value, 0);
   if (!photoFoodState.imageDataUrl) {
     showMessage(els.photoFoodMessage, "Сначала выберите или сфотографируйте еду.", true);
-    return;
-  }
-  if (!totalWeight) {
-    showMessage(els.photoFoodMessage, "Введите общий вес еды в граммах.", true);
     return;
   }
   if (!isSafeProxyUrl(state.aiProxyUrl)) {
@@ -571,7 +569,7 @@ async function analyzePhotoFood() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         image: photoFoodState.imageDataUrl,
-        totalWeightGrams: totalWeight,
+        totalWeightGrams: totalWeight || null,
         language: state.language,
         productHints: getAllProducts().map((item) => item.name).slice(0, 80)
       })
@@ -582,13 +580,22 @@ async function analyzePhotoFood() {
       throw new Error(data.error || "AI proxy error");
     }
 
-    const items = normalizeAiFoodItems(data.items || [], totalWeight);
+    const resolvedWeight = positiveNumber(data.detectedTotalWeightGrams, totalWeight);
+    if (!resolvedWeight) {
+      showMessage(els.photoFoodMessage, "AI не нашёл вес на упаковке. Введите общий вес еды вручную.", true);
+      return;
+    }
+
+    const items = normalizeAiFoodItems(data.items || [], resolvedWeight);
     if (!items.length) {
       showMessage(els.photoFoodMessage, "AI не смог уверенно распознать еду. Попробуйте другое фото или добавьте еду текстом.", true);
       return;
     }
 
     photoFoodState.items = items;
+    photoFoodState.detectedWeight = resolvedWeight;
+    photoFoodState.weightSource = data.weightSource || (totalWeight ? "введено вручную" : "прочитано с фото");
+    els.photoFoodWeight.value = round(resolvedWeight);
     renderPhotoFoodResult();
     showMessage(els.photoFoodMessage, "Проверьте продукты и граммы перед добавлением. Фото не сохраняется.", false);
   } catch (error) {
@@ -620,6 +627,10 @@ function normalizeAiFoodItems(items, totalWeight) {
 
 function renderPhotoFoodResult() {
   els.photoResult.innerHTML = `
+    <div class="photo-weight-note">
+      Вес еды: <strong>${round(photoFoodState.detectedWeight)} г</strong>
+      <span>${escapeHtml(photoFoodState.weightSource)}</span>
+    </div>
     <div class="photo-review-list">
       ${photoFoodState.items.map((item, index) => {
         const found = findProduct(normalize(item.name));
@@ -689,7 +700,7 @@ function confirmPhotoFood() {
   state.foods = [...items, ...state.foods];
   state.foodByDate[state.currentDate] = state.foods;
   saveDailyState();
-  photoFoodState = { imageDataUrl: "", items: [] };
+  photoFoodState = { imageDataUrl: "", items: [], detectedWeight: 0, weightSource: "" };
   els.photoFoodFile.value = "";
   els.photoFoodWeight.value = "";
   els.photoPreview.hidden = true;
