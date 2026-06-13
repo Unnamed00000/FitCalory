@@ -1,4 +1,4 @@
-const CACHE_NAME = "fitcalory-v6";
+const CACHE_NAME = "fitcalory-v7";
 const APP_ASSETS = [
   "./",
   "./index.html",

@@ -6,9 +6,10 @@ const STORAGE_KEYS = {
   activityByDate: "fitcalory_activity_by_date",
   customProducts: "fitcalory_custom_products",
   theme: "fitcalory_theme",
-  language: "fitcalory_language",
-  aiProxyUrl: "fitcalory_ai_proxy_url"
+  language: "fitcalory_language"
 };
+
+const AI_PROXY_URL = "";
 
 const DEFAULT_PROFILE = {
   goal: "loss",
@@ -171,7 +172,6 @@ let state = {
   customProducts: load(STORAGE_KEYS.customProducts, []),
   theme: load(STORAGE_KEYS.theme, "light"),
   language: load(STORAGE_KEYS.language, "ru"),
-  aiProxyUrl: load(STORAGE_KEYS.aiProxyUrl, ""),
   currentDate: todayKey()
 };
 
@@ -209,7 +209,7 @@ function bindElements() {
     "totalProtein", "totalFat", "totalCarbs", "nextAdvice",
     "foodForm", "foodInput", "foodError", "foodList",
     "activityForm", "activityInput", "activityError", "activityList",
-    "profileForm", "goal", "sex", "weight", "height", "age", "language", "aiProxyUrl",
+    "profileForm", "goal", "sex", "weight", "height", "age", "language",
     "productForm", "productName", "productCalories", "productProtein",
     "productFat", "productCarbs", "productUnitWeight", "productMessage",
     "customProducts", "historySummary", "historyList", "periodPreset",
@@ -239,10 +239,8 @@ function bindEvents() {
       age: positiveNumber(els.age.value, DEFAULT_PROFILE.age)
     };
     state.language = els.language.value;
-    state.aiProxyUrl = els.aiProxyUrl.value.trim();
     save(STORAGE_KEYS.profile, state.profile);
     save(STORAGE_KEYS.language, state.language);
-    save(STORAGE_KEYS.aiProxyUrl, state.aiProxyUrl);
     applyTranslations();
     render();
   });
@@ -555,8 +553,8 @@ async function analyzePhotoFood() {
     showMessage(els.photoFoodMessage, "Сначала выберите или сфотографируйте еду.", true);
     return;
   }
-  if (!isSafeProxyUrl(state.aiProxyUrl)) {
-    showMessage(els.photoFoodMessage, "Добавьте безопасный AI proxy URL в профиле. API-ключ нельзя хранить в приложении.", true);
+  if (!isSafeProxyUrl(AI_PROXY_URL)) {
+    showMessage(els.photoFoodMessage, "AI распознавание ещё не подключено владельцем приложения. Пользователям не нужно вводить URL вручную.", true);
     return;
   }
 
@@ -564,7 +562,7 @@ async function analyzePhotoFood() {
   els.photoAnalyzeButton.textContent = "Распознаю...";
 
   try {
-    const response = await fetch(state.aiProxyUrl, {
+    const response = await fetch(AI_PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1367,7 +1365,6 @@ function fillProfileForm() {
   els.height.value = state.profile.height;
   els.age.value = state.profile.age;
   els.language.value = state.language;
-  els.aiProxyUrl.value = state.aiProxyUrl;
 }
 
 function applyTheme() {

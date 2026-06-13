@@ -24,7 +24,13 @@ Deploy the Worker, then copy its endpoint URL, for example:
 https://fitcalory-food-ai.your-account.workers.dev
 ```
 
-Open FitCalory, go to Profile, paste the URL into `AI proxy URL`, and save.
+Set this URL once in `script.js`:
+
+```js
+const AI_PROXY_URL = "https://fitcalory-food-ai.your-account.workers.dev";
+```
+
+End users should not enter any proxy URL. They just take a photo, and the result is added only to their own local FitCalory diary.
 
 The browser sends only the resized food photo and optional total food weight to this Worker. If the user leaves weight empty, the Worker asks AI to read visible package weight such as `220 g` or `1 kg` and return grams. If no weight is visible, the app asks the user to enter it manually.
 
