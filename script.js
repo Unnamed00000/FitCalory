@@ -561,14 +561,15 @@ function calculateTotals() {
   const fat = sum(state.foods, "fat");
   const carbs = sum(state.foods, "carbs");
   const activityBurn = sum(state.activities, "calories");
+  const hasData = state.foods.length > 0 || state.activities.length > 0;
   const bmr = calculateBmr(state.profile);
   const baseBurn = bmr * 1.2;
   const totalBurn = baseBurn + activityBurn;
-  const balance = state.profile.goal === "loss"
+  const balance = !hasData ? 0 : state.profile.goal === "loss"
     ? totalBurn - eaten
     : eaten - totalBurn;
 
-  return { eaten, protein, fat, carbs, activityBurn, bmr, baseBurn, totalBurn, balance };
+  return { eaten, protein, fat, carbs, activityBurn, bmr, baseBurn, totalBurn, balance, hasData };
 }
 
 function calculateBmr(profile) {
@@ -598,6 +599,10 @@ function renderDashboard(totals) {
 }
 
 function getGoalMessage(totals) {
+  if (!totals.hasData) {
+    return { text: "Добавьте еду или активность, и FitCalory посчитает результат дня.", className: "" };
+  }
+
   if (state.profile.goal === "loss") {
     if (totals.balance > 1000) {
       return { text: "Дефицит слишком большой. Лучше худеть безопасно и не перегружать организм.", className: "status-bad" };
@@ -621,6 +626,11 @@ function getGoalMessage(totals) {
 }
 
 function renderAdvice(totals) {
+  if (!totals.hasData) {
+    els.nextAdvice.innerHTML = `<div class="advice-item"><strong>Начните день</strong><span>Добавьте первую еду или активность, чтобы увидеть дефицит, профицит и советы.</span></div>`;
+    return;
+  }
+
   const isLoss = state.profile.goal === "loss";
   const target = isLoss ? 400 : 300;
   const remaining = Math.max(0, target - totals.balance);
