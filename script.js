@@ -1073,7 +1073,7 @@ function drawCategoryBars(canvas, data, color) {
 function prepareCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  const width = Math.max(300, rect.width || canvas.parentElement.clientWidth || 300);
+  const width = Math.max(1, rect.width || canvas.parentElement.clientWidth || 300);
   const height = Number(canvas.getAttribute("height")) || 240;
   canvas.width = width * ratio;
   canvas.height = height * ratio;
