@@ -591,8 +591,8 @@ function renderDashboard(totals) {
   els.balanceValue.className = message.className;
   els.totalCalories.textContent = round(totals.eaten);
   els.activityCalories.textContent = round(totals.activityBurn);
-  els.baseBurn.textContent = round(totals.baseBurn);
-  els.totalBurn.textContent = round(totals.totalBurn);
+  els.baseBurn.textContent = totals.hasData ? round(totals.baseBurn) : 0;
+  els.totalBurn.textContent = totals.hasData ? round(totals.totalBurn) : 0;
   els.totalProtein.textContent = `${formatNumber(totals.protein)} г`;
   els.totalFat.textContent = `${formatNumber(totals.fat)} г`;
   els.totalCarbs.textContent = `${formatNumber(totals.carbs)} г`;
